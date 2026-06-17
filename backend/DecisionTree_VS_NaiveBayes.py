@@ -1,5 +1,4 @@
 import pandas as pd
-import numpy as np
 from sklearn.naive_bayes import GaussianNB         
 from sklearn.tree import DecisionTreeClassifier
 from sklearn.model_selection import train_test_split
@@ -24,7 +23,6 @@ num_cols = ['Age', 'Years_of_Experience', 'Routine_Task_Percentage', 'Creativity
             'Human_Interaction_Level', 'Number_of_AI_Tools_Used', 'AI_Usage_Hours_Per_Week',
             'Tasks_Automated_Percentage', 'AI_Training_Hours']
 
-X = df_dropna.drop(columns=['Layoff_Risk'])
 y = df_dropna['Layoff_Risk']
 
 
@@ -64,7 +62,7 @@ def model_DecisionTree(*variable_col):
     y_pred = pipeline.predict(x_test)
     return pipeline, y_test, y_pred
 
-def model_NaiveBayes(*variable_col):              # ← 改函数名
+def model_NaiveBayes(*variable_col):             
     if len(variable_col) == 1 and isinstance(variable_col[0], (tuple, list)):
         cols = list(variable_col[0])
     else:
@@ -76,17 +74,17 @@ def model_NaiveBayes(*variable_col):              # ← 改函数名
     if sub_cat:
         preprocessor = ColumnTransformer([
             # OHE outputs a Sparse Matrix by default (only stores non-zero positions to save memory).
-            # GaussianNB requires Dense, so  set sparse_output=False.
+            # GaussianNB requires Dense, so  set sparse_output=False. ('cat': encoding name, for process repeat )
             ('cat', OneHotEncoder(handle_unknown='ignore', sparse_output=False), sub_cat),
             ('num', 'passthrough', sub_num)
         ])
         pipeline = Pipeline([
             ('preprocess', preprocessor),
-            ('model', GaussianNB())                # ← 改这里
+            ('model', GaussianNB())  #'model' ModelName             
         ])
     else:
         pipeline = Pipeline([
-            ('model', GaussianNB())                # ← 改这里
+            ('model', GaussianNB())                
         ])
 
     x_train, x_test, y_train, y_test = train_test_split(
