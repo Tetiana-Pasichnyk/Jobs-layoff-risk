@@ -1,27 +1,18 @@
 import pandas as pd
 import numpy as np
-import mysql.connector
+from config.db_utils import get_db_connection
+from config.settings import CSV_PATH, DB_PASSWORD, DB_PORT
 
-print("=== STARTING DATA CLEANING & INGESTION PROCESS ===")
+print("Processing data cleaning and database ingestion...")
 
-# ==========================================
 # 1. DATA LOADING & CLEANING (Pandas)
-# ==========================================
+df = pd.read_csv(CSV_PATH)
 
-# Step 1: Load the raw dataset from the relative path '../data/'
-csv_path = '../data/rohdaten-ai-impact-jobs-layoff-risk-dataset.csv'
-df = pd.read_csv(csv_path)
-initial_row_count = len(df)
-print(f"Initial dataset loaded from {csv_path}: {initial_row_count} rows.")
-
-# Step 2: Drop rows with missing values in critical baseline columns
+# Drop rows missing critical baseline categorical data
 critical_columns = ['Layoff_Risk', 'Job_Role', 'Industry']
 df_cleaned = df.dropna(subset=critical_columns).copy()
-post_drop_count = len(df_cleaned)
-dropped_count = initial_row_count - post_drop_count
-print(f"[METHOD: DROP] Dropped {dropped_count} rows due to missing critical baseline data.")
 
-# Step 3: Impute missing categorical values using the Mode of the Job_Role group
+# Impute missing categorical values using group-by mode (fallback to global mode)
 categorical_columns = ['Education_Level', 'Company_Size', 'Job_Level', 'AI_Adoption_Level']
 for col in categorical_columns:
     if df_cleaned[col].isnull().sum() > 0:
@@ -30,9 +21,7 @@ for col in categorical_columns:
             lambda x: x.fillna(x.mode()[0] if not x.mode().empty else global_mode)
         )
 
-print("[METHOD: IMPUTATION] Textual columns filled using Group Mode.")
-
-# Step 4: Impute missing numerical values using the Median of the Job_Role group
+# Impute missing numerical values using group-by median (fallback to global median)
 numeric_columns = [
     'Age', 'Years_of_Experience', 'Routine_Task_Percentage', 'Creativity_Requirement',
     'Human_Interaction_Level', 'Number_of_AI_Tools_Used', 'AI_Usage_Hours_Per_Week',
@@ -45,32 +34,12 @@ for col in numeric_columns:
             lambda x: x.fillna(x.median() if not pd.isna(x.median()) else global_median)
         )
 
-print("[METHOD: IMPUTATION] Numerical columns filled using Group Median.")
-print(f"Cleaning Summary: Final Cleaned Rows = {post_drop_count}")
-print("--------------------------------------------------")
-
-
-# ==========================================
 # 2. DATABASE CONNECTION & INGESTION (MySQL)
-# ==========================================
-
-# Database connection settings (Replace 'your_password' with your actual MySQL password)
-db_config = {
-    'host': 'localhost',
-    'user': 'root',
-    'password': 'root', 
-    'database': 'AI_Impact_DB'
-}
 
 try:
-    # Step 5: Establish connection to the MySQL server
-    conn = mysql.connector.connect(**db_config)
-    cursor = conn.cursor()
-    print("Successfully connected to MySQL Server!")
+    conn, cursor = get_db_connection(password=DB_PASSWORD, port=DB_PORT)
     
-    # Step 6: Synchronize unique values with lookup tables using INSERT IGNORE
-    print("Syncing lookup tables...")
-    
+    # Sync unique text values into relational lookup tables
     for edu in df_cleaned['Education_Level'].unique():
         cursor.execute("INSERT IGNORE INTO education_levels (education_level) VALUES (%s)", (edu,))
         
@@ -81,9 +50,8 @@ try:
         cursor.execute("INSERT IGNORE INTO job_roles (job_role_name) VALUES (%s)", (role,))
     
     conn.commit()
-    print("Lookup tables synchronized successfully.")
     
-    # Step 7: Fetch generated IDs back into Python memory to create mapping dictionaries
+    # Fetch database IDs into reference dictionaries for fast row mapping
     cursor.execute("SELECT education_id, education_level FROM education_levels")
     edu_map = {level: id_ for (id_, level) in cursor.fetchall()}
 
@@ -93,11 +61,10 @@ try:
     cursor.execute("SELECT job_role_id, job_role_name FROM job_roles")
     role_map = {name: id_ for (id_, name) in cursor.fetchall()}
     
-    # Step 8: Iterate and insert rows into relational tables with explicit type casting
-    print("\nWriting data to relational structure (Converting floats to ints where needed)...")
-    
+    # Ingest rows step-by-step into structural tables
+    inserted_counter = 0
     for index, row in df_cleaned.iterrows():
-        # 1. Insert into 'employees' table (Casting to INT)
+        # Insert target employee demographics
         insert_employee_query = """
             INSERT INTO employees (age, years_of_experience, education_id, industry_id, job_role_id, company_size, job_level)
             VALUES (%s, %s, %s, %s, %s, %s, %s)
@@ -112,11 +79,9 @@ try:
             row['Job_Level']
         )
         cursor.execute(insert_employee_query, employee_data)
-        
-        # Get the automatically generated ID of the employee we just inserted
         employee_id = cursor.lastrowid
         
-        # 2. Insert into 'ai_impact_metrics' table (Casting to INT, keeping weekly hours as FLOAT)
+        # Insert accompanying metrics linked via generated employee key
         insert_metrics_query = """
             INSERT INTO ai_impact_metrics (
                 employee_id, routine_task_percentage, creativity_requirement, human_interaction_level,
@@ -131,23 +96,20 @@ try:
             int(round(row['Human_Interaction_Level'])),
             row['AI_Adoption_Level'],
             int(round(row['Number_of_AI_Tools_Used'])),
-            float(row['AI_Usage_Hours_Per_Week']),  # The only field that remains a FLOAT
+            float(row['AI_Usage_Hours_Per_Week']),  
             int(round(row['Tasks_Automated_Percentage'])),
             int(round(row['AI_Training_Hours'])),
             row['Layoff_Risk']
         )
         cursor.execute(insert_metrics_query, metrics_data)
-
-    # Commit all changes to the disk
+        
     conn.commit()
-    print(f"\nSUCCESS! All {len(df_cleaned)} records mapped to INT/FLOAT correctly and saved to MySQL.")
+    print(f"SUCCESS: Mapped and inserted {len(df_cleaned)} records into MySQL.")
 
-except mysql.connector.Error as err:
-    print(f"\n[DATABASE ERROR]: Something went wrong: {err}")
+except Exception as err:
+    print(f"[ERROR]: Database ingestion failed: {err}")
 
 finally:
-    # Safely close the database connection
     if 'conn' in locals() and conn.is_connected():
         cursor.close()
         conn.close()
-        print("MySQL connection closed safely.")
