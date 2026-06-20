@@ -6,24 +6,59 @@ from sklearn.metrics import accuracy_score
 from sklearn.pipeline import Pipeline
 from sklearn.preprocessing import OneHotEncoder
 from sklearn.compose import ColumnTransformer
+import config.db_utils
+from config import settings
 
-rohdata_path = "./data/rohdaten-ai-impact-jobs-layoff-risk-dataset.csv"
-try:
-    df = pd.read_csv(rohdata_path)
-    print("The data has been loaded!")
-    if df is None or df.empty:
-        raise FileNotFoundError
-except Exception as e:
-    print(f"something went wrong: {e}")
 
-df_dropna = df.dropna()
+# rohdata_path = "./data/rohdaten-ai-impact-jobs-layoff-risk-dataset.csv"
+# try:
+#     df = pd.read_csv(rohdata_path)
+#     print("The data has been loaded!")
+#     if df is None or df.empty:
+#         raise FileNotFoundError
+# except Exception as e:
+#     print(f"something went wrong: {e}")
 
-cat_cols = ['Education_Level', 'Industry', 'Job_Role', 'Company_Size', 'Job_Level', 'AI_Adoption_Level']
-num_cols = ['Age', 'Years_of_Experience', 'Routine_Task_Percentage', 'Creativity_Requirement',
-            'Human_Interaction_Level', 'Number_of_AI_Tools_Used', 'AI_Usage_Hours_Per_Week',
-            'Tasks_Automated_Percentage', 'AI_Training_Hours']
+conn,_ = config.db_utils.get_db_connection(settings.DB_PORT,settings.DB_PASSWORD)
+sql_query = """
+        SELECT 
+            e.employee_id,
+            e.age,
+            e.years_of_experience,
+            el.education_level,       
+            i.industry_name,         
+            jr.job_role_name,         
+            e.company_size,
+            e.job_level,
+            m.routine_task_percentage,
+            m.creativity_requirement,
+            m.human_interaction_level,
+            m.ai_adoption_level,
+            m.number_of_ai_tools_used,
+            m.ai_usage_hours_per_week,
+            m.tasks_automated_percentage,
+            m.ai_training_hours,
+            m.layoff_risk
+        FROM employees e
+        LEFT JOIN education_levels el ON e.education_id = el.education_id
+        LEFT JOIN industries i ON e.industry_id = i.industry_id
+        LEFT JOIN job_roles jr ON e.job_role_id = jr.job_role_id
+        LEFT JOIN ai_impact_metrics m ON e.employee_id = m.employee_id;
+    """
 
-y = df_dropna['Layoff_Risk']
+df = pd.read_sql(sql_query,conn)
+# df.drop('employee_id')
+# colums = df.columns
+# print(colums)
+# print(f'len:{len(colums)}')
+
+
+cat_cols = ['education_level', 'industry_name', 'job_role_name', 'company_size', 'job_level', 'ai_adoption_level']
+num_cols = ['age', 'years_of_experience', 'routine_task_percentage', 'creativity_requirement','human_interaction_level', 
+            'number_of_ai_tools_used', 'ai_usage_hours_per_week', 'tasks_automated_percentage', 'ai_training_hours']
+             
+                 
+y = df['layoff_risk']
 
 
 def model_DecisionTree(*variable_col):
@@ -56,7 +91,7 @@ def model_DecisionTree(*variable_col):
         ])
 
     x_train, x_test, y_train, y_test = train_test_split(
-        df_dropna[cols], y, test_size=0.2, random_state=42
+        df[cols], y, test_size=0.2, random_state=42
     )
     pipeline.fit(x_train, y_train)
     y_pred = pipeline.predict(x_test)
@@ -88,7 +123,7 @@ def model_NaiveBayes(*variable_col):
         ])
 
     x_train, x_test, y_train, y_test = train_test_split(
-        df_dropna[cols], y, test_size=0.2, random_state=42
+        df[cols], y, test_size=0.2, random_state=42
     )
     pipeline.fit(x_train, y_train)
     y_pred = pipeline.predict(x_test)
@@ -100,9 +135,9 @@ print("\n" + "-" * 50)
 print("Decision Tree Model Results:")
 print("-" * 50)
 
-model_routine_dt,     y_test_routine_dt,     y_pred_routine_dt     = model_DecisionTree('Routine_Task_Percentage')
-model_Interaction_dt, y_test_Interaction_dt, y_pred_Interaction_dt = model_DecisionTree('Human_Interaction_Level')
-model_both_dt,        y_test_both_dt,        y_pred_both_dt        = model_DecisionTree('Routine_Task_Percentage', 'Human_Interaction_Level')
+model_routine_dt,     y_test_routine_dt,     y_pred_routine_dt     = model_DecisionTree('routine_task_percentage')
+model_Interaction_dt, y_test_Interaction_dt, y_pred_Interaction_dt = model_DecisionTree('human_interaction_level')
+model_both_dt,        y_test_both_dt,        y_pred_both_dt        = model_DecisionTree('routine_task_percentage', 'human_interaction_level')
 
 # All features (categorical + numerical)
 all_columns = num_cols + cat_cols
@@ -126,9 +161,9 @@ print("-" * 50)
 print("Naive Bayes Model Results:")
 print("-" * 50)
 
-model_routine,     y_test_routine,     y_pred_routine     = model_NaiveBayes('Routine_Task_Percentage')
-model_Interaction, y_test_Interaction, y_pred_Interaction = model_NaiveBayes('Human_Interaction_Level')
-model_both,        y_test_both,        y_pred_both        = model_NaiveBayes('Routine_Task_Percentage', 'Human_Interaction_Level')
+model_routine,     y_test_routine,     y_pred_routine     = model_NaiveBayes('routine_task_percentage')
+model_Interaction, y_test_Interaction, y_pred_Interaction = model_NaiveBayes('human_interaction_level')
+model_both,        y_test_both,        y_pred_both        = model_NaiveBayes('routine_task_percentage', 'human_interaction_level')
 
 all_columns = num_cols + cat_cols
 model_all_nb,  y_test_all_nb,  y_pred_all_nb  = model_NaiveBayes(all_columns)
@@ -151,34 +186,66 @@ print("\n" + "-" * 50)
 print("Predictions on New Data:")
 print("-" * 50)
 
-new_row = pd.DataFrame([{
-        'Age': 45, 'Education_Level': 'High School', 'Years_of_Experience': 15,
-        'Industry': 'Manufacturing', 'Job_Role': 'Operator', 'Company_Size': 'Small',
-        'Job_Level': 'Entry', 'Routine_Task_Percentage': 85.0, 'Creativity_Requirement': 10.0,
-        'Human_Interaction_Level': 20.0, 'AI_Adoption_Level': 'Low', 'Number_of_AI_Tools_Used': 1.0,
-        'AI_Usage_Hours_Per_Week': 2.0, 'Tasks_Automated_Percentage': 70.0, 'AI_Training_Hours': 0.0
+# sample 1 (item:11)， Medium， sample 2：low， sample 3: high
+row_von_database = pd.DataFrame([{
+    'education_level': "Master's",
+    'industry_name': 'Retail',
+    'job_role_name': 'Inventory Analyst',
+    'company_size': 'Small',
+    'job_level': 'Senior',
+    'ai_adoption_level': 'Medium',
+    'age': 48.0,
+    'years_of_experience': 6.0,
+    'routine_task_percentage': 84.0,
+    'creativity_requirement': 8.0,
+    'human_interaction_level': 81.0,
+    'number_of_ai_tools_used': 2.0,
+    'ai_usage_hours_per_week': 5.0,
+    'tasks_automated_percentage': 67.0,
+    'ai_training_hours': 29.0
     },
     {
-        'Age': 32, 'Education_Level': 'Master\'s', 'Years_of_Experience': 8,
-        'Industry': 'IT', 'Job_Role': 'ML Engineer', 'Company_Size': 'Large',
-        'Job_Level': 'Senior', 'Routine_Task_Percentage': 20.0, 'Creativity_Requirement': 90.0,
-        'Human_Interaction_Level': 60.0, 'AI_Adoption_Level': 'High', 'Number_of_AI_Tools_Used': 5.0,
-        'AI_Usage_Hours_Per_Week': 20.0, 'Tasks_Automated_Percentage': 15.0, 'AI_Training_Hours': 15.0
+    'education_level': 'PhD',
+    'industry_name': 'Education',
+    'job_role_name': 'Research Assistant',
+    'company_size': 'Medium',
+    'job_level': 'Entry',
+    'ai_adoption_level': 'Low',
+    'age': 36.0,
+    'years_of_experience': 11.0,
+    'routine_task_percentage': 26.0,
+    'creativity_requirement': 60.0,
+    'human_interaction_level': 77.0,
+    'number_of_ai_tools_used': 2.0,
+    'ai_usage_hours_per_week': 1.0,
+    'tasks_automated_percentage': 14.0,
+    'ai_training_hours': 4.0
     },
     {
-        'Age': 38, 'Education_Level': 'Bachelor\'s', 'Years_of_Experience': 10,
-        'Industry': 'Finance', 'Job_Role': 'Financial Analyst', 'Company_Size': 'Medium',
-        'Job_Level': 'Mid', 'Routine_Task_Percentage': 50.0, 'Creativity_Requirement': 50.0,
-        'Human_Interaction_Level': 50.0, 'AI_Adoption_Level': 'Medium', 'Number_of_AI_Tools_Used': 3.0,
-        'AI_Usage_Hours_Per_Week': 10.0, 'Tasks_Automated_Percentage': 40.0, 'AI_Training_Hours': 5.0
-    }])
+    'education_level': "Master's",
+    'industry_name': 'Education',
+    'job_role_name': 'Teacher',
+    'company_size': 'Large',
+    'job_level': 'Entry',
+    'ai_adoption_level': 'High',
+    'age': 56.0,
+    'years_of_experience': 11.0,
+    'routine_task_percentage': 91.0,
+    'creativity_requirement': 1.0,
+    'human_interaction_level': 96.0,
+    'number_of_ai_tools_used': 9.0,
+    'ai_usage_hours_per_week': 26.0,
+    'tasks_automated_percentage': 74.0,
+    'ai_training_hours': 68.0
+    }
+    ])
 
 print("\nNaive Bayes Predictions:")
-prediction_nb = model_all_nb.predict(new_row)
+prediction_nb = model_all_nb.predict(row_von_database)
 for i, pred in enumerate(prediction_nb):
     print(f"sample {i+1} Layoff_Risk would be: {pred}")
 
 print("\nDecision Tree Predictions:")
-prediction_dt = model_all_dt.predict(new_row)
+prediction_dt = model_all_dt.predict(row_von_database)
 for i, pred in enumerate(prediction_dt):
     print(f"sample {i+1} Layoff_Risk would be: {pred}")
