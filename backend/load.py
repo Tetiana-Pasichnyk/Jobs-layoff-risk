@@ -15,6 +15,16 @@ def load_data(filename):
 
     return df
 
+def load_data_email(filename):
+    if os.path.exists("./data/" + filename):
+        path = "./data/" + filename
+    else:
+        raise FileNotFoundError("CSV-Datei nicht gefunden")
+
+    df = pd.read_table(path)
+    print(f"[LOAD] Datensatz geladen: {df.shape}")
+
+    return df
 
 def clean_data(df, num_cols, cat_cols):
     # numerische Spalten
