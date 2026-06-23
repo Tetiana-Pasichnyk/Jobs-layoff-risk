@@ -9,10 +9,10 @@ import email_analyzer
 from config import db_utils,settings
 
 
-pd.set_option('display.max_rows', None)      # 显示所有行
-pd.set_option('display.max_columns', None)   # 显示所有列
-pd.set_option('display.width', None)         # 不限制总宽度(避免换行截断)
-pd.set_option('display.max_colwidth', None)  # 单元格内容不截断
+pd.set_option('display.max_rows', None)      # terminal show all rows
+pd.set_option('display.max_columns', None)   # terminal show all cols
+pd.set_option('display.width', None)         # width no limit
+pd.set_option('display.max_colwidth', None)  # show all content in tabelcell
 
 conn,_ = db_utils.get_db_connection(settings.DB_PORT,settings.DB_PASSWORD)
 sql_query = """
@@ -42,6 +42,7 @@ sql_query = """
     """
 
 df = pd.read_sql(sql_query,conn)
+# print(df.groupby("layoff_risk").size())
 
 def train_model():
     cat_cols = ['education_level', 'industry_name', 'job_role_name', 'company_size', 'job_level', 'ai_adoption_level']

@@ -3,7 +3,47 @@ import load
 from config import settings
 from huggingface_hub import InferenceClient
 import json
-import pandas as pd
+import os
+
+'''
+def get_email_analysis_data(email_filename):
+    """
+    Unified interface exposed to other modules.
+    Within the same run: First call requests the API and saves to cache; subsequent calls read from cache.
+    Upon program exit: Automatically deletes the temporary cache file.
+    """
+    cache_filename = f"cache_{os.path.splitext(os.path.basename(email_filename))[0]}.json"
+
+    # 1. If cache exists, read from it directly
+    if os.path.exists(cache_filename):
+        print(f"🔄 [Cache Hit] Reading from temporary cache for this run: {cache_filename}...")
+        with open(cache_filename, 'r', encoding='utf-8') as f:
+            data_dict = json.load(f)
+        return pd.DataFrame([data_dict])
+    
+    # 2. If cache does not exist, call the LLM API
+    print(f"🔍 [Cache Miss] Preparing for the initial LLM API call...")
+    df_result = huggingface_llama(email_filename, cache_filename)
+
+    # 3. Core change: Register an exit hook
+    # Instruct Python: "When the process terminates, automatically execute cleanup_cache(cache_filename)"
+    atexit.register(cleanup_cache, cache_filename)
+    print(f"📌 Registered auto-cleanup hook. {cache_filename} will be deleted upon exit.")
+
+    return df_result
+
+
+def cleanup_cache(filename):
+    """
+    Cleanup function: Responsible for removing the temporary cache file.
+    """
+    if os.path.exists(filename):
+        try:
+            os.remove(filename)
+            print(f"\n🧹 [Auto-Cleanup] Process terminated. Temporary cache {filename} successfully deleted!")
+        except Exception as e:
+            print(f"\n❌ [Auto-Cleanup] Failed to delete cache file: {e}")
+'''
 
 def huggingface_llama(email_filename):
     df_email = load.load_data_email(email_filename)
@@ -70,6 +110,8 @@ def huggingface_llama(email_filename):
     data_dict = json.loads(AI_return_Content)
     AI_Content_df = pd.DataFrame([data_dict])
     return AI_Content_df
+
+
 
 
 
