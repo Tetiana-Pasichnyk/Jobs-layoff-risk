@@ -9,16 +9,6 @@ from sklearn.compose import ColumnTransformer
 import config.db_utils
 from config import settings
 
-
-# rohdata_path = "./data/rohdaten-ai-impact-jobs-layoff-risk-dataset.csv"
-# try:
-#     df = pd.read_csv(rohdata_path)
-#     print("The data has been loaded!")
-#     if df is None or df.empty:
-#         raise FileNotFoundError
-# except Exception as e:
-#     print(f"something went wrong: {e}")
-
 conn,_ = config.db_utils.get_db_connection(settings.DB_PORT,settings.DB_PASSWORD)
 sql_query = """
         SELECT 
@@ -47,11 +37,6 @@ sql_query = """
     """
 
 df = pd.read_sql(sql_query,conn)
-# df.drop('employee_id')
-# colums = df.columns
-# print(colums)
-# print(f'len:{len(colums)}')
-
 
 cat_cols = ['education_level', 'industry_name', 'job_role_name', 'company_size', 'job_level', 'ai_adoption_level']
 num_cols = ['age', 'years_of_experience', 'routine_task_percentage', 'creativity_requirement','human_interaction_level', 
@@ -183,7 +168,7 @@ print(
 
 # --- Predict on new raw data using both models ---
 print("\n" + "-" * 50)
-print("Predictions on New Data:")
+print("Predictions on Test Data:")
 print("-" * 50)
 
 # sample 1 (item:11)， Medium， sample 2：low， sample 3: high
