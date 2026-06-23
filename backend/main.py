@@ -1,3 +1,4 @@
+import os
 from load import load_data, clean_data, encode_target
 from stats_analysis import (
     run_eda,
@@ -15,6 +16,8 @@ from reporting import build_html, export_pdf
 # ==============================================================================
 
 dateiname = "../data/rohdaten-ai-impact-jobs-layoff-risk-dataset.csv"
+
+OUTPUT_DIR = "output_analysis"
 
 numerische_spalten = [
     'Age', 'Years_of_Experience', 'Routine_Task_Percentage',
@@ -62,8 +65,7 @@ print("Konfidenzintervall:", stats["ci"])
 
 
 # 4. VISUALISIERUNG
-plots = create_plots(df, chi_df, numerische_spalten)
-
+plots = create_plots(df, chi_df, numerische_spalten, output_dir=OUTPUT_DIR)
 print("\n[SCHRITT] Visualisierungen erstellt")
 
 
@@ -89,7 +91,8 @@ html = build_html(
     empfohlenes_verfahren=stats["method"]
 )
 
-export_pdf(html, "Analysebericht_KI_Arbeitsmarkt.pdf")
+pdf_pfad = os.path.join(OUTPUT_DIR, "Analysebericht_KI_Arbeitsmarkt.pdf")
+export_pdf(html, pdf_pfad)
 
 
 # ==============================================================================
