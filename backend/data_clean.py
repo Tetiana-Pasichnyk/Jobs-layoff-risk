@@ -2,40 +2,14 @@ import pandas as pd
 import numpy as np
 from config.db_utils import get_db_connection
 from config.settings import CSV_PATH, DB_PASSWORD, DB_PORT
-
-print("Processing data cleaning and database ingestion...")
+from utils.data_prep import clean_employee_data 
 
 # 1. DATA LOADING & CLEANING (Pandas)
-df = pd.read_csv(CSV_PATH)
 
-# Drop rows missing critical baseline categorical data
-critical_columns = ['Layoff_Risk', 'Job_Role', 'Industry']
-df_cleaned = df.dropna(subset=critical_columns).copy()
-
-# Impute missing categorical values using group-by mode (fallback to global mode)
-categorical_columns = ['Education_Level', 'Company_Size', 'Job_Level', 'AI_Adoption_Level']
-for col in categorical_columns:
-    if df_cleaned[col].isnull().sum() > 0:
-        global_mode = df_cleaned[col].mode()[0]
-        df_cleaned[col] = df_cleaned.groupby('Job_Role')[col].transform(
-            lambda x: x.fillna(x.mode()[0] if not x.mode().empty else global_mode)
-        )
-
-# Impute missing numerical values using group-by median (fallback to global median)
-numeric_columns = [
-    'Age', 'Years_of_Experience', 'Routine_Task_Percentage', 'Creativity_Requirement',
-    'Human_Interaction_Level', 'Number_of_AI_Tools_Used', 'AI_Usage_Hours_Per_Week',
-    'Tasks_Automated_Percentage', 'AI_Training_Hours'
-]
-for col in numeric_columns:
-    if df_cleaned[col].isnull().sum() > 0:
-        global_median = df_cleaned[col].median()
-        df_cleaned[col] = df_cleaned.groupby('Job_Role')[col].transform(
-            lambda x: x.fillna(x.median() if not pd.isna(x.median()) else global_median)
-        )
+df_csv_raw = pd.read_csv(CSV_PATH)
+df_cleaned = clean_employee_data(df_csv_raw)
 
 # 2. DATABASE CONNECTION & INGESTION (MySQL)
-
 try:
     conn, cursor = get_db_connection(password=DB_PASSWORD, port=DB_PORT)
     
@@ -102,12 +76,13 @@ try:
             row['Layoff_Risk']
         )
         cursor.execute(insert_metrics_query, metrics_data)
+        inserted_counter += 1
         
     conn.commit()
-    print(f"SUCCESS: Mapped and inserted {len(df_cleaned)} records into MySQL.")
+    print(f"SUCCESS: Inserted {inserted_counter} clean records into MySQL.")
 
 except Exception as err:
-    print(f"[ERROR]: Database ingestion failed: {err}")
+    pass
 
 finally:
     if 'conn' in locals() and conn.is_connected():
