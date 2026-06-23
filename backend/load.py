@@ -1,18 +1,12 @@
-import os
 import pandas as pd
 
 
-def load_data(filename):
-    if os.path.exists(filename):
-        path = filename
-    elif os.path.exists("/mnt/data/" + filename):
-        path = "/mnt/data/" + filename
-    else:
-        raise FileNotFoundError("CSV-Datei nicht gefunden")
+dateiname = "../data/rohdaten-ai-impact-jobs-layoff-risk-dataset.csv"
 
+
+def load_data(path):
     df = pd.read_csv(path)
     print(f"[LOAD] Datensatz geladen: {df.shape}")
-
     return df
 
 def load_data_email(filename):
@@ -25,6 +19,7 @@ def load_data_email(filename):
     print(f"[LOAD] Datensatz geladen: {df.shape}")
 
     return df
+df = load_data(dateiname)
 
 def clean_data(df, num_cols, cat_cols):
     # numerische Spalten
