@@ -1,24 +1,15 @@
 import os
 
 def build_html(
-    desc_stats,
-    outliers_dict,
-    ci,
-    shapiro_html,
-    pearson_r, p_pearson,
-    spearman_r, p_spearman,
-    spearman_ai, p_spearman_ai,
-    z_stat, p_z,
-    img_scatter,
-    img_heat,
-    img_chi,
+    desc_stats, outliers_dict, ci, shapiro_html,
+    pearson_r, p_pearson, spearman_r, p_spearman,
+    spearman_ai, p_spearman_ai, z_stat, p_z,
+    img_scatter, img_heat, img_chi,
     empfohlenes_verfahren="Spearman" 
 ):
     desc_rows_html = ""
-
     for index, row in desc_stats.iterrows():
         col_outliers = outliers_dict.get(index, 0)
-
         desc_rows_html += f"""
         <tr>
             <td><b>{index}</b></td>
@@ -33,7 +24,7 @@ def build_html(
         """
 
     html_template = f"""
-    <!DOCTYPE html>
+      <!DOCTYPE html>
     <html>
     <head>
     <meta charset="utf-8">
@@ -51,19 +42,19 @@ def build_html(
             font-size: 11pt;
         }}
         .header {{
-            background-color: #1e3d59;
-            color: white;
+            background-color: #d4e84e;
+            color: black;
             padding: 20px;
             border-radius: 4px;
             margin-bottom: 20px;
         }}
         .header h1 {{ margin: 0; font-size: 18pt; }}
-        .header p {{ margin: 5px 0 0 0; color: #ffc107; font-size: 11pt; }}
-        h2 {{ color: #1e3d59; font-size: 14pt; border-left: 4px solid #ffc107; padding-left: 8px; margin-top: 20px; }}
-        h3 {{ color: #1e3d59; font-size: 11pt; margin-top: 15px; margin-bottom: 8px; border-bottom: 1px solid #dee2e6; padding-bottom: 4px; }}
-        p {{ text-align: justify; margin-bottom: 10px; }}
+        .header p {{ margin: 5px 0 0 0; color: black; font-size: 11pt; }}
+        h2 {{ color: black; font-size: 14pt; border-left: 4px solid #ffc107; padding-left: 8px; margin-top: 20px; }}
+        h3 {{ color: black; font-size: 11pt; margin-top: 15px; margin-bottom: 8px; border-bottom: 1px solid #dee2e6; padding-bottom: 4px; }}
+        p {{ text-align: justify; margin-bottom: 10px; color: black;  }}
         ul {{ margin-top: 5px; margin-bottom: 5px; }}
-        .results-box {{ background-color: #f5f7fa; border-top: 3px solid #1e3d59; padding: 15px; margin: 15px 0; border-radius: 4px; }}
+        .results-box {{ background-color: #faf7f4; border-top: 3px solid #1e3d59; padding: 15px; margin: 15px 0; border-radius: 4px; }}
         
         .chart-page {{ page-break-before: always; }}
         
@@ -72,7 +63,7 @@ def build_html(
         .chart-title {{ font-size: 10pt; font-style: italic; color: #555; margin-top: 5px; margin-bottom: 15px; }}
         table {{ width: 100%; border-collapse: collapse; margin-top: 15px; font-size: 10pt; }}
         th, td {{ border: 1px solid #dee2e6; padding: 8px; text-align: left; }}
-        th {{ background-color: #1e3d59; color: white; }}
+        th {{ background-color: #d4e84e; color: black; }}
         tr:nth-child(even) {{ background-color: #f8f9fa; }}
     </style>
     </head>
@@ -231,15 +222,21 @@ def build_html(
 
     </body>
     </html>
+
     """
     return html_template
 
 
 def export_pdf(html_content, output_filename):
     print(f"[PDF] Exportiere Bericht nach {output_filename}...")
+    
+    dirname = os.path.dirname(output_filename)
+    if dirname and not os.path.exists(dirname):
+        os.makedirs(dirname, exist_ok=True)
+        
     try:
         from weasyprint import HTML
         HTML(string=html_content).write_pdf(output_filename)
-        print(f"[PDF] Успешно сохранено: {output_filename}")
+        print(f"[PDF] Erfolgreich gespeichert: {output_filename}")
     except ImportError:
-        print("[КРИТИЧЕСКАЯ ОШИБКА] Библиотека weasyprint не установлена. Выполните: pip install weasyprint")
+       print("[KRITISCHER FEHLER] Die Bibliothek weasyprint ist nicht installiert.")
