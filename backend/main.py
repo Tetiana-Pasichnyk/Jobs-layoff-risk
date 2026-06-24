@@ -61,8 +61,8 @@ stats = statistical_tests(df, numerische_spalten)
 
 print("\n[SCHRITT] Statistische Tests abgeschlossen")
 print("Bevorzugte Methode:", stats["method"])
-print("Konfidenzintervall:", stats["ci"])
-
+print("Konfidenzintervall (Routine):", stats["ci_routine"])
+print("Konfidenzintervall (Automated):", stats["ci_automated"])
 
 # 4. VISUALISIERUNG
 plots = create_plots(df, chi_df, numerische_spalten, output_dir=OUTPUT_DIR)
@@ -73,7 +73,8 @@ print("\n[SCHRITT] Visualisierungen erstellt")
 html = build_html(
     desc_stats=desc,
     outliers_dict=outliers,
-    ci=stats["ci"],
+    ci_routine=stats["ci_routine"],
+    ci_automated=stats["ci_automated"],
     shapiro_html="\n".join(
         [f"<li>{col}: {p:.4f}</li>" for col, p in stats["shapiro"]]
     ),
@@ -107,3 +108,6 @@ print("Korrelationsauszug:")
 print(corr["Layoff_Risk_Numeric"].sort_values(ascending=False).head())
 
 print("\nBericht gespeichert: Analysebericht_KI_Arbeitsmarkt.pdf")
+
+
+

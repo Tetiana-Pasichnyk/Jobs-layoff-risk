@@ -1,7 +1,7 @@
 import os
 
 def build_html(
-    desc_stats, outliers_dict, ci, shapiro_html,
+    desc_stats, outliers_dict, ci_routine, ci_automated, shapiro_html,
     pearson_r, p_pearson, spearman_r, p_spearman,
     spearman_ai, p_spearman_ai, z_stat, p_z,
     img_scatter, img_heat, img_chi,
@@ -64,7 +64,7 @@ def build_html(
         table {{ width: 100%; border-collapse: collapse; margin-top: 15px; font-size: 10pt; }}
         th, td {{ border: 1px solid #dee2e6; padding: 8px; text-align: left; }}
         th {{ background-color: #d4e84e; color: black; }}
-        tr:nth-child(even) {{ background-color: #f8f9fa; }}
+        tr:nth-child(even) {{ background-color: #faf7f4; }}
     </style>
     </head>
     <body>
@@ -135,11 +135,11 @@ def build_html(
                     {desc_rows_html}
                 </tbody>
             </table>
-
-            <div class="results-box">
-                <h3>Intervallschätzung (Konfidenzintervall)</h3>
-                <p>Das berechnete 95%-Konfidenzintervall für den wahren Mittelwert des Routineanteils liegt zwischen <b>{ci[0]:.2f}%</b> und <b>{ci[1]:.2f}%</b>.</p>
-            </div>
+<div class="results-box">
+    <h3>Intervallschätzung (Konfidenzintervalle)</h3>
+    <p>• Das berechnete 95%-Konfidenzintervall für den wahren Mittelwert des <b>Routineanteils</b> liegt zwischen <b>{ci_routine[0]:.2f}%</b> und <b>{ci_routine[1]:.2f}%</b>.</p>
+    <p>• Das berechnete 95%-Konfidenzintervall für den wahren Mittelwert des <b>Automatisierungsanteils</b> liegt zwischen <b>{ci_automated[0]:.2f}%</b> und <b>{ci_automated[1]:.2f}%</b>.</p>
+</div>
         </div>
 
         <div class="chart-page">
