@@ -101,13 +101,18 @@ def statistical_tests(df, num_cols):
     z_stat, p_z = ztest(high, low)
 
     # Konfidenzintervall
-    mean = df["Routine_Task_Percentage"].mean()
-    std = df["Routine_Task_Percentage"].std(ddof=1)
     n = len(df)
-    ci = norm.interval(0.95, loc=mean, scale=std / np.sqrt(n))
+  
+    mean_routine = df["Routine_Task_Percentage"].mean()
+    std_routine = df["Routine_Task_Percentage"].std(ddof=1)
+    ci_routine = norm.interval(0.95, loc=mean_routine, scale=std_routine / np.sqrt(n))
+
+    mean_automated = df["Tasks_Automated_Percentage"].mean()
+    std_automated = df["Tasks_Automated_Percentage"].std(ddof=1)
+    ci_automated = norm.interval(0.95, loc=mean_automated, scale=std_automated / np.sqrt(n))
+   
 
     print("[STATS] Hypothesentests abgeschlossen")
-
     return {
         "shapiro": shapiro_results,
         "method": method,
@@ -115,5 +120,6 @@ def statistical_tests(df, num_cols):
         "spearman": (spearman_r, p_spearman),
         "spearman_ai": (spearman_ai, p_spearman_ai),
         "ztest": (z_stat, p_z),
-        "ci": ci
+        "ci_routine": ci_routine,      
+        "ci_automated": ci_automated
     }
