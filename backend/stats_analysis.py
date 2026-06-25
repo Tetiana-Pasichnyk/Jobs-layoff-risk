@@ -90,15 +90,25 @@ def statistical_tests(df, num_cols):
         df["Tasks_Automated_Percentage"]
     )
 
-    spearman_ai, p_spearman_ai = spearmanr(
-        df["AI_Usage_Hours_Per_Week"],
-        df["Tasks_Automated_Percentage"]
-    )
 
     # Z-Test
-    high = df[df["Layoff_Risk"] == "High"]["Tasks_Automated_Percentage"]
-    low = df[df["Layoff_Risk"] == "Low"]["Tasks_Automated_Percentage"]
-    z_stat, p_z = ztest(high, low)
+    features = [
+        "Routine_Task_Percentage",
+        "AI_Usage_Hours_Per_Week",
+        "Number_of_AI_Tools_Used"
+    ]
+
+    z_results = []
+
+    for col in features:
+        high = df[df["Layoff_Risk"] == "High"][col]
+        low = df[df["Layoff_Risk"] == "Low"][col]
+
+        z_stat, p_z = ztest(high, low)
+
+        z_results.append((col, z_stat, p_z))
+
+   
 
     # Konfidenzintervall
     n = len(df)
@@ -118,8 +128,7 @@ def statistical_tests(df, num_cols):
         "method": method,
         "pearson": (pearson_r, p_pearson),
         "spearman": (spearman_r, p_spearman),
-        "spearman_ai": (spearman_ai, p_spearman_ai),
-        "ztest": (z_stat, p_z),
+        "ztest_multi": z_results,
         "ci_routine": ci_routine,      
         "ci_automated": ci_automated
     }
