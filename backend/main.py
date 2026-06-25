@@ -82,10 +82,9 @@ html = build_html(
     p_pearson=stats["pearson"][1],
     spearman_r=stats["spearman"][0],
     p_spearman=stats["spearman"][1],
-    spearman_ai=stats["spearman_ai"][0],
-    p_spearman_ai=stats["spearman_ai"][1],
-    z_stat=stats["ztest"][0],
-    p_z=stats["ztest"][1],
+    z_tests="\n".join(
+        [f"{col}: Z={z:.2f}, p={p:.4f}" for col, z, p in stats["ztest_multi"]]
+    ),
     img_scatter=plots["scatter"],
     img_heat=plots["heatmap"],
     img_chi=plots["chi"],
