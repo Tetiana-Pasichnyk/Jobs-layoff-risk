@@ -1,4 +1,5 @@
 import pandas as pd
+import os
 
 
 dateiname = "../data/rohdaten-ai-impact-jobs-layoff-risk-dataset.csv"
@@ -19,7 +20,6 @@ def load_data_email(filename):
     print(f"[LOAD] Datensatz geladen: {df.shape}")
 
     return df
-df = load_data(dateiname)
 
 def clean_data(df, num_cols, cat_cols):
     # numerische Spalten

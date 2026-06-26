@@ -45,15 +45,21 @@ df = pd.read_sql(sql_query,conn)
 # print(df.groupby("layoff_risk").size())
 
 def train_model():
-    cat_cols = ['education_level', 'industry_name', 'job_role_name', 'company_size', 'job_level', 'ai_adoption_level']
-    num_cols = ['age', 'years_of_experience', 'routine_task_percentage', 'creativity_requirement','human_interaction_level', 
-            'number_of_ai_tools_used', 'ai_usage_hours_per_week', 'tasks_automated_percentage', 'ai_training_hours']
-    
+
+    cat_cols_all = ['education_level', 'industry_name', 'job_role_name', 'company_size', 'job_level', 'ai_adoption_level']
+    num_cols_all = ['age', 'years_of_experience', 'routine_task_percentage', 'creativity_requirement',
+                    'human_interaction_level', 'number_of_ai_tools_used', 'ai_usage_hours_per_week',
+                    'tasks_automated_percentage', 'ai_training_hours']
+
+    # "significant" = all columns minus the ones we consider weak/noisy predictors
+    cat_cols_significant = [c for c in cat_cols_all if c != "company_size"]
+    num_cols_significant = [c for c in num_cols_all if c not in ('age', 'years_of_experience', 'human_interaction_level','tasks_automated_percentage')]
+
     # drop label column
     cols = [c for c in df.columns if c != 'layoff_risk']
     
-    sub_cat = [c for c in cols if c in cat_cols] 
-    sub_num = [c for c in cols if c in num_cols]
+    sub_cat = [c for c in cols if c in cat_cols_significant] 
+    sub_num = [c for c in cols if c in num_cols_significant]
 
     y = df['layoff_risk']
 
@@ -86,19 +92,21 @@ def predict(pipeline,new_rows):
     y_pred = pipeline.predict(new_rows)
     return y_pred
 
-'''
-# new_data = new_row = pd.DataFrame([{
-#         'Age': 45, 'Education_Level': 'High School', 'Years_of_Experience': 15,
-#         'Industry': 'Manufacturing', 'Job_Role': 'Operator', 'Company_Size': 'Small',
-#         'Job_Level': 'Entry', 'Routine_Task_Percentage': 85.0, 'Creativity_Requirement': 10.0,
-#         'Human_Interaction_Level': 20.0, 'AI_Adoption_Level': 'Low', 'Number_of_AI_Tools_Used': 1.0,
-#         'AI_Usage_Hours_Per_Week': 2.0, 'Tasks_Automated_Percentage': 70.0, 'AI_Training_Hours': 0.0
+# new_data = pd.DataFrame([{
+#         'education_level': 'High School',
+#         'industry_name': 'Manufacturing', 'job_role_name': 'Operator', 
+#         'job_level': 'Entry', 'routine_task_percentage': 85.0, 'creativity_requirement': 10.0,
+#         'ai_adoption_level': 'Low', 'number_of_ai_tools_used': 1.0,
+#         'ai_usage_hours_per_week': 2.0, 'ai_training_hours': 0.0  
 #     }])
-'''
 
-new_data = email_analyzer.huggingface_llama("email_sample02.txt")
+
+new_data = email_analyzer.huggingface_llama("email_sample01.txt")
 pipeline = train_model()
 
 # -----------  output for Frontend --------------------
 y_pred = predict(pipeline,new_data)
+
+print(f"-"*40," Result ","-"*40)
 print(f"The predicted layoff risk for this position is: {y_pred}")
+print(f"-"*90)

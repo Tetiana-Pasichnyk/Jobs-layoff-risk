@@ -3,3 +3,6 @@ __pycache__/
 *.pyd
 
 output/
+
+.gitigonre
+config/settings.py
