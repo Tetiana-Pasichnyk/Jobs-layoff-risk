@@ -78,7 +78,7 @@ Danach sind die Tabellen leer. Die Daten werden im nächsten Schritt per Python 
 **Wichtig:** Vor jedem Befehl ins Projektroot wechseln:
 
 ```bash
-cd /Users/tatanapasecnik/Desktop/Abschlussproject/Jobs-layoff-risk
+cd Jobs-layoff-risk
 ```
 
 ### Empfohlene Reihenfolge
@@ -98,7 +98,7 @@ cd /Users/tatanapasecnik/Desktop/Abschlussproject/Jobs-layoff-risk
 **Voraussetzungen:** MySQL läuft, leere Tabellen wurden per SQL angelegt (siehe Setup), `DB_PASSWORD` und `DB_PORT` sind gesetzt.
 
 ```bash
-cd /Users/tatanapasecnik/Desktop/Abschlussproject/Jobs-layoff-risk
+cd Jobs-layoff-risk
 python -m src.database.data_clean
 ```
 
@@ -115,7 +115,7 @@ python -m src.database.data_clean
 **Voraussetzungen:** Nur die CSV-Datei in `data/` — **keine MySQL-Verbindung nötig**.
 
 ```bash
-cd /Users/tatanapasecnik/Desktop/Abschlussproject/Jobs-layoff-risk
+cd Jobs-layoff-risk
 python -m src.statistics.run_statistics
 ```
 
@@ -134,7 +134,7 @@ python -m src.statistics.run_statistics
 **Voraussetzungen:** MySQL mit geladenen Daten (Schritt 1).
 
 ```bash
-cd /Users/tatanapasecnik/Desktop/Abschlussproject/Jobs-layoff-risk
+cd Jobs-layoff-risk
 python -m src.ml_model.DecisionTree_VS_NaiveBayes
 ```
 
@@ -147,7 +147,7 @@ python -m src.ml_model.DecisionTree_VS_NaiveBayes
 **Voraussetzungen:** MySQL mit geladenen Daten, gültiger `HUGGINGFACE_TOKEN`.
 
 ```bash
-cd /Users/tatanapasecnik/Desktop/Abschlussproject/Jobs-layoff-risk
+cd Jobs-layoff-risk
 export HUGGINGFACE_TOKEN=ihr_token
 python -m src.ml_model.DecisionTree_Predictor
 ```
@@ -163,7 +163,7 @@ Standard-E-Mail ändern: in `DecisionTree_Predictor.py` den Parameter `email_fil
 **Voraussetzungen:** MySQL mit geladenen Daten.
 
 ```bash
-cd /Users/tatanapasecnik/Desktop/Abschlussproject/Jobs-layoff-risk
+cd Jobs-layoff-risk
 python -m src.ml_model.decision_tree_visualization
 ```
 
@@ -197,8 +197,7 @@ python -m src.ml_model.decision_tree_visualization
 Sie befinden sich nicht im Projektroot. Lösung:
 
 ```bash
-cd /Users/tatanapasecnik/Desktop/Abschlussproject/Jobs-layoff-risk
-python -m src.statistics.run_statistics
+cd Jobs-layoff-risk
 ```
 
 Nicht aus `src/statistics/` oder anderen Unterordnern starten.
