@@ -56,32 +56,24 @@ cp .env.example .env
 
 ### 3. `.env` anlegen
 
-```bash
-cp .env.example .env
-```
-
 Tragen Sie in `.env` mindestens `DB_PASSWORD` und `DB_PORT` ein (Standard: `root` / `8889`).  
 `HUGGINGFACE_TOKEN` ist nur für die E-Mail-Vorhersage nötig. Die Datei wird automatisch geladen.
 
-### 4. MySQL-Datenbank anlegen (plattformunabhängig)
+### 4. MySQL-Datenbank und Tabellen anlegen
 
-MySQL muss laufen. **Ein Befehl für Windows, macOS und Linux** — Tabellen erstellen und CSV laden:
+MySQL muss laufen. Die Befehle aus der SQL-Datei müssen **einmalig in Ihrer MySQL-Umgebung ausgeführt** werden, um die Datenbank `AI_Impact_DB` und die leeren Tabellen zu erstellen:
 
-```bash
-python -m src.database.setup_db
+```
+src/database/sql-ai-impact-jobs-layoff-risk.sql
 ```
 
-Nur Tabellen erstellen (ohne CSV-Import):
+**Beispiele:**
 
-```bash
-python -m src.database.init_db
-```
+- **MySQL Workbench / phpMyAdmin:** SQL-Datei öffnen und ausführen
+- **Terminal (macOS/Linux):** `mysql -u root -p < src/database/sql-ai-impact-jobs-layoff-risk.sql`
+- **Windows (PowerShell):** `Get-Content src\database\sql-ai-impact-jobs-layoff-risk.sql | mysql -u root -p`
 
-Alternativ weiterhin per MySQL-CLI (nur Unix/macOS oder `cmd` unter Windows):
-
-```bash
-mysql -u root -p < src/database/sql-ai-impact-jobs-layoff-risk.sql
-```
+Danach sind die Tabellen leer. Die Daten werden im nächsten Schritt per Python aus der CSV geladen.
 
 ---
 
@@ -97,7 +89,7 @@ cd /Users/tatanapasecnik/Desktop/Abschlussproject/Jobs-layoff-risk
 
 | Schritt | Befehl | MySQL nötig? | Beschreibung |
 |---------|--------|--------------|--------------|
-| 1 | `python -m src.database.setup_db` | Ja | Tabellen anlegen + CSV in MySQL laden |
+| 1 | `python -m src.database.data_clean` | Ja | CSV bereinigen und in MySQL laden |
 | 2 | `python -m src.statistics.run_statistics` | Nein | Statistische Analyse + Grafiken |
 | 3 | `python -m src.ml_model.DecisionTree_VS_NaiveBayes` | Ja | Decision Tree vs. Naive Bayes |
 | 4 | `python -m src.ml_model.DecisionTree_Predictor` | Ja + HF-Token | Vorhersage aus E-Mail |
@@ -107,7 +99,7 @@ cd /Users/tatanapasecnik/Desktop/Abschlussproject/Jobs-layoff-risk
 
 ### 1. Datenbank — CSV in MySQL laden
 
-**Voraussetzungen:** MySQL läuft, Schema wurde angelegt (siehe Setup), `DB_PASSWORD` und `DB_PORT` sind gesetzt.
+**Voraussetzungen:** MySQL läuft, leere Tabellen wurden per SQL angelegt (siehe Setup), `DB_PASSWORD` und `DB_PORT` sind gesetzt.
 
 ```bash
 cd /Users/tatanapasecnik/Desktop/Abschlussproject/Jobs-layoff-risk
@@ -219,7 +211,7 @@ Nicht aus `src/statistics/` oder anderen Unterordnern starten.
 
 - MySQL-Server starten
 - `DB_PORT` und `DB_PASSWORD` prüfen (Standard: Port `8889`, Passwort `root`)
-- Schema mit `mysql -u root -p < src/database/sql-ai-impact-jobs-layoff-risk.sql` anlegen
+- SQL-Datei `src/database/sql-ai-impact-jobs-layoff-risk.sql` in MySQL ausführen, um Datenbank und Tabellen anzulegen
 
 ### ML-Befehle liefern leere oder fehlerhafte Ergebnisse
 
