@@ -157,66 +157,8 @@ Typische Beobachtung: Mit nur einem oder zwei Merkmalen ist die Genauigkeit deut
 
 ---
 
-## 6. Aufrufanleitung
 
-**Alle Befehle vom Projektroot aus:**
-
-```bash
-cd /Users/tatanapasecnik/Desktop/Abschlussproject/Jobs-layoff-risk
-```
-
-### Schritt 1 — MySQL-Schema anlegen
-
-```bash
-mysql -u root -p < src/database/sql-ai-impact-jobs-layoff-risk.sql
-```
-
-### Schritt 2 — CSV bereinigen und in die Datenbank laden
-
-```bash
-export DB_PASSWORD=root
-export DB_PORT=8889
-python -m src.database.data_clean
-```
-
-Datenbank-Zugangsdaten werden in `src/database/settings.py` aus Umgebungsvariablen gelesen (nicht hardcodiert).
-
-### Schritt 3 — Modellvergleich ausführen
-
-```bash
-python -m src.ml_model.DecisionTree_VS_NaiveBayes
-```
-
-### Schritt 4 — Vorhersage aus E-Mail
-
-HuggingFace-Token setzen:
-
-```bash
-export HUGGINGFACE_TOKEN=ihr_token
-python -m src.ml_model.DecisionTree_Predictor
-```
-
-Standard-E-Mail ändern in `DecisionTree_Predictor.py`:
-
-```python
-def main(email_filename="email_sample01.txt"):  # oder email_sample02.txt
-```
-
-Oder beim Aufruf:
-
-```python
-main("email_sample01.txt")
-```
-
-### Schritt 5 — Decision Tree visualisieren (optional)
-
-```bash
-python -m src.ml_model.decision_tree_visualization
-```
-
----
-
-## 7. Modulübersicht
+## 6. Modulübersicht
 
 | Datei | Aufgabe |
 |-------|---------|
