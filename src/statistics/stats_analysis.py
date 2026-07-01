@@ -79,7 +79,7 @@ def statistical_tests(df, num_cols):
     all_normal = all(p > 0.05 for _, p in shapiro_results)
     method = "Pearson" if all_normal else "Spearman"
 
-    # Korrelationen
+    # Korrelation: Routine vs. Automatisierung
     pearson_r, p_pearson = pearsonr(
         df["Routine_Task_Percentage"],
         df["Tasks_Automated_Percentage"]
@@ -91,7 +91,7 @@ def statistical_tests(df, num_cols):
     )
 
 
-    # Z-Test
+    # Z-Test: High vs. Low
     features = [
         "Routine_Task_Percentage",
         "AI_Usage_Hours_Per_Week",
@@ -110,7 +110,7 @@ def statistical_tests(df, num_cols):
 
    
 
-    # Konfidenzintervall
+    # Konfidenzintervalle (95 %)
     n = len(df)
   
     mean_routine = df["Routine_Task_Percentage"].mean()

@@ -1,44 +1,32 @@
 import os
-import base64
-from io import BytesIO
 import matplotlib.pyplot as plt
 from matplotlib.colors import LinearSegmentedColormap
 import seaborn as sns
 
-
-def fig_to_base64(fig_obj, filename=None):
-    if filename:
-        dirname = os.path.dirname(filename)
-        if dirname and not os.path.exists(dirname):
-            os.makedirs(dirname, exist_ok=True)
-            
-        fig_obj.savefig(filename, format='png', bbox_inches='tight', dpi=150)
-        print(f"[PLOTS] Grafik erfolgreich gespeichert: {filename}")
-    
-    buf = BytesIO()
-    fig_obj.savefig(buf, format='png', bbox_inches='tight', dpi=150)
-    buf.seek(0)
-    img_str = base64.b64encode(buf.read()).decode('utf-8')
+def save_plot(fig_obj, filename):
+    dirname = os.path.dirname(filename)
+    if dirname and not os.path.exists(dirname):
+        os.makedirs(dirname, exist_ok=True)
+        
+    fig_obj.savefig(filename, format='png', bbox_inches='tight', dpi=150)
+    print(f"[PLOTS] Grafik erfolgreich gespeichert: {filename}")
     plt.close(fig_obj)
-    return f"data:image/png;base64,{img_str}"
 
 
 def create_plots(df, chi_df, numerische_spalten, output_dir="output_analysis"):
-
     sns.set_theme(style="whitegrid", rc={
         "figure.facecolor": "#FFFFFF",
         "axes.facecolor": "#FFFFFF",
         "grid.color": "#E5E5E5"
     })
 
-    color_hellgruen = '#AFBA12'        # Low
-    color_dunkelorange = '#CA5902'     # Medium
-    color_red = '#d62728'              # High
-    color_dunkelgruen = '#175C00'      # Additional
+    # Farbpalette
+    color_hellgruen = '#AFBA12'
+    color_dunkelorange = '#CA5902'
+    color_red = '#d62728'
+    color_dunkelgruen = '#175C00'
 
-    # ==========================================================================
-    # 1. Scatter Plot
-    # ==========================================================================
+    # Scatterplot
     fig1, ax1 = plt.subplots(figsize=(8, 4.5))
     df_sample = df.sample(min(len(df), 1000), random_state=42)
 
@@ -65,11 +53,9 @@ def create_plots(df, chi_df, numerische_spalten, output_dir="output_analysis"):
     plt.tight_layout()
     
     scatter_path = os.path.join(output_dir, "scatter_plot.png")
-    img_scatter = fig_to_base64(fig1, filename=scatter_path)
+    save_plot(fig1, scatter_path)
 
-    # ==========================================================================
-    # 2. Heatmap (Spearman-Korrelation)
-    # ==========================================================================
+    # Korrelations-Heatmap (Spearman)
     fig2, ax2 = plt.subplots(figsize=(10, 8))
     corr_columns = numerische_spalten + ['Layoff_Risk_Numeric']
     corr_matrix = df[corr_columns].corr(method='spearman')
@@ -103,11 +89,9 @@ def create_plots(df, chi_df, numerische_spalten, output_dir="output_analysis"):
     plt.tight_layout()
     
     heatmap_path = os.path.join(output_dir, "correlation_heatmap.png")
-    img_heat = fig_to_base64(fig2, filename=heatmap_path)
+    save_plot(fig2, heatmap_path)
 
-    # ==========================================================================
-    # 3. Chi²-Barplot
-    # ==========================================================================
+    # Chi²-Balkendiagramm
     fig3, ax3 = plt.subplots(figsize=(8, 4.5))
 
     custom_colors = []
@@ -139,14 +123,10 @@ def create_plots(df, chi_df, numerische_spalten, output_dir="output_analysis"):
     ax3.set_ylabel("Merkmal", fontsize=10)
     plt.tight_layout()
     
-
     chi_path = os.path.join(output_dir, "chi2_barplot.png")
-    img_chi = fig_to_base64(fig3, filename=chi_path)
+    save_plot(fig3, chi_path)
 
     print(f"[PLOTS] Alle Visualisierungen wurden im Ordner gespeichert: {output_dir}")
-
-    return {
-        "scatter": img_scatter,
-        "heatmap": img_heat,
-        "chi": img_chi
-    }
+    
+   
+    return None

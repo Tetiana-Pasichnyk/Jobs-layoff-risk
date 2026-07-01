@@ -1,6 +1,8 @@
-from sklearn.tree import plot_tree
 import matplotlib.pyplot as plt
-from DecisionTree_Predictor import train_model  
+from sklearn.tree import plot_tree
+
+from src.ml_model.DecisionTree_Predictor import train_model
+
 
 def visualize_tree(pipeline):
     model = pipeline.named_steps['model']

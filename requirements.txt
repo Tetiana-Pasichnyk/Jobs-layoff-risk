@@ -1,0 +1,9 @@
+pandas
+numpy
+scipy
+statsmodels
+matplotlib
+seaborn
+scikit-learn
+mysql-connector-python
+huggingface-hub
