@@ -6,4 +6,5 @@ matplotlib
 seaborn
 scikit-learn
 mysql-connector-python
+python-dotenv
 huggingface-hub
