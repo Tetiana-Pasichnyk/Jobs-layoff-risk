@@ -54,25 +54,30 @@ pip install -r requirements.txt
 cp .env.example .env
 ```
 
-### 3. Umgebungsvariablen setzen
-
-Variablen aus `.env` werden nicht automatisch geladen. Entweder manuell exportieren:
+### 3. `.env` anlegen
 
 ```bash
-export DB_PASSWORD=root
-export DB_PORT=8889
-export HUGGINGFACE_TOKEN=ihr_token   # nur für E-Mail-Vorhersage nötig
+cp .env.example .env
 ```
 
-Oder die Werte direkt in `.env` eintragen und vor jedem Start exportieren:
+Tragen Sie in `.env` mindestens `DB_PASSWORD` und `DB_PORT` ein (Standard: `root` / `8889`).  
+`HUGGINGFACE_TOKEN` ist nur für die E-Mail-Vorhersage nötig. Die Datei wird automatisch geladen.
+
+### 4. MySQL-Datenbank anlegen (plattformunabhängig)
+
+MySQL muss laufen. **Ein Befehl für Windows, macOS und Linux** — Tabellen erstellen und CSV laden:
 
 ```bash
-export $(grep -v '^#' .env | xargs)
+python -m src.database.setup_db
 ```
 
-### 4. MySQL-Datenbank anlegen
+Nur Tabellen erstellen (ohne CSV-Import):
 
-MySQL muss laufen. Schema erstellen (löscht vorhandene DB `AI_Impact_DB` und legt sie neu an):
+```bash
+python -m src.database.init_db
+```
+
+Alternativ weiterhin per MySQL-CLI (nur Unix/macOS oder `cmd` unter Windows):
 
 ```bash
 mysql -u root -p < src/database/sql-ai-impact-jobs-layoff-risk.sql
@@ -92,7 +97,7 @@ cd /Users/tatanapasecnik/Desktop/Abschlussproject/Jobs-layoff-risk
 
 | Schritt | Befehl | MySQL nötig? | Beschreibung |
 |---------|--------|--------------|--------------|
-| 1 | `python -m src.database.data_clean` | Ja | CSV bereinigen und in MySQL laden |
+| 1 | `python -m src.database.setup_db` | Ja | Tabellen anlegen + CSV in MySQL laden |
 | 2 | `python -m src.statistics.run_statistics` | Nein | Statistische Analyse + Grafiken |
 | 3 | `python -m src.ml_model.DecisionTree_VS_NaiveBayes` | Ja | Decision Tree vs. Naive Bayes |
 | 4 | `python -m src.ml_model.DecisionTree_Predictor` | Ja + HF-Token | Vorhersage aus E-Mail |
