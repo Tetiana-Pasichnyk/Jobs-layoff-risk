@@ -28,7 +28,7 @@ Ausführliche Dokumentation zu Decision Tree, Naive Bayes und LLM-E-Mail-Analyse
 **Alle Befehle müssen vom Projektroot ausgeführt werden** — nicht aus `src/`, `src/statistics/` oder anderen Unterordnern.
 
 ```bash
-cd /Users/tatanapasecnik/Desktop/Abschlussproject/Jobs-layoff-risk
+cd Jobs-layoff-risk
 ```
 
 Prüfen, ob Sie im richtigen Ordner sind:
@@ -40,7 +40,7 @@ pwd
 Erwartete Ausgabe:
 
 ```
-/Users/tatanapasecnik/Desktop/Abschlussproject/Jobs-layoff-risk
+.../Jobs-layoff-risk
 ```
 
 Die Eingabezeile im Terminal sollte mit `Jobs-layoff-risk %` enden — **nicht** mit `statistics %` oder `database %`.
