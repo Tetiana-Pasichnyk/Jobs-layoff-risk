@@ -67,11 +67,7 @@ MySQL muss laufen. Die Befehle aus der SQL-Datei müssen **einmalig in Ihrer MyS
 src/database/sql-ai-impact-jobs-layoff-risk.sql
 ```
 
-**Beispiele:**
-
 - **MySQL Workbench / phpMyAdmin:** SQL-Datei öffnen und ausführen
-- **Terminal (macOS/Linux):** `mysql -u root -p < src/database/sql-ai-impact-jobs-layoff-risk.sql`
-- **Windows (PowerShell):** `Get-Content src\database\sql-ai-impact-jobs-layoff-risk.sql | mysql -u root -p`
 
 Danach sind die Tabellen leer. Die Daten werden im nächsten Schritt per Python aus der CSV geladen.
 
