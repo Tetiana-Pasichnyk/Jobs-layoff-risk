@@ -8,6 +8,12 @@ from src.statistics.load import load_data_email
 
 
 def huggingface_llama(email_filename):
+    if not settings.HUGGINGFACE_TOKEN:
+        raise ValueError(
+            "HUGGINGFACE_TOKEN is not set. Add it to .env in the project root "
+            "(see .env.example) and install python-dotenv, or export HUGGINGFACE_TOKEN."
+        )
+
     df_email = load_data_email(email_filename)
     email_text = "\n".join(df_email.iloc[:, 0].astype(str).tolist())
 
