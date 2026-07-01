@@ -1,0 +1,24 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+
+# Virtuelle Umgebungen
+.venv/
+venv/
+env/
+
+# Geheimnisse (Vorlage .env.example bleibt im Repo)
+.env
+.env.local
+
+# Betriebssystem
+.DS_Store
+Thumbs.db
+
+# IDE (optional, lokale Einstellungen)
+.idea/
+.vscode/
+
+# Generierte Ausgaben (werden per Pipeline neu erstellt)
+output_analysis/

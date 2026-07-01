@@ -1,38 +1,34 @@
 import pandas as pd
 
+from src.paths import CSV_PATH, DATA_DIR
 
-dateiname = "../data/rohdaten-ai-impact-jobs-layoff-risk-dataset.csv"
 
-
-def load_data(path):
+def load_data(path=None):
+    path = path or CSV_PATH
     df = pd.read_csv(path)
     print(f"[LOAD] Datensatz geladen: {df.shape}")
     return df
 
+
 def load_data_email(filename):
-    if os.path.exists("./data/" + filename):
-        path = "./data/" + filename
-    else:
-        raise FileNotFoundError("CSV-Datei nicht gefunden")
+    path = DATA_DIR / filename
+    if not path.exists():
+        raise FileNotFoundError(f"Email file not found: {path}")
 
     df = pd.read_table(path)
     print(f"[LOAD] Datensatz geladen: {df.shape}")
-
     return df
-df = load_data(dateiname)
+
 
 def clean_data(df, num_cols, cat_cols):
-    # numerische Spalten
     for col in num_cols:
         df[col] = df[col].fillna(df[col].median())
 
-    # kategoriale Spalten
     for col in cat_cols:
         mode_val = df[col].mode()
         df[col] = df[col].fillna(mode_val[0] if len(mode_val) > 0 else "Unbekannt")
 
     print("[CLEAN] Fehlende Werte wurden ersetzt")
-
     return df
 
 
@@ -44,5 +40,4 @@ def encode_target(df):
     })
 
     print("[ENCODE] Zielvariable kodiert")
-
     return df
